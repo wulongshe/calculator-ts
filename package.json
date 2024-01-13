@@ -1,0 +1,22 @@
+{
+  "name": "calculator-ts",
+  "version": "1.0.0",
+  "author": "shewulong",
+  "license": "MIT",
+  "description": "",
+  "keywords": [
+    "typescript",
+    "calculator",
+    "compiler"
+  ],
+  "type": "module",
+  "types": "src/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wulongshe/calculator-ts.git"
+  },
+  "scripts": {},
+  "engines": {
+    "node": ">=14.20.0"
+  }
+}
