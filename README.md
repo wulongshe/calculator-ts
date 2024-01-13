@@ -2,7 +2,7 @@
 
 ## Description
 
-> This is a calculator made with typescript type.
+> This is a lisp calculator made with typescript type.
 
 ## Example
 
