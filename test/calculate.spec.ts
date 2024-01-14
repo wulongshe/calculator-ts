@@ -10,17 +10,16 @@ type Test = [
   Expect<Calculate<`(* -4 4)`>, -16>,
   Expect<Calculate<`(* -4 -4)`>, 16>,
   Expect<Calculate<`(* 9 +9)`>, 81>,
+  Expect<Calculate<`(* 100 99)`>, 9900>,
   Expect<Calculate<`(+ (* 100 99) 99)`>, 9999>,
 
   Expect<Calculate<`(/ 3 2)`>, 1>,
-  Expect<Calculate<`(/ -3 2)`>, -1>,
+  Expect<Calculate<`(/ -3 +2)`>, -1>,
   Expect<Calculate<`(/ -3 -2)`>, 1>,
   Expect<Calculate<`(/ 3 -2)`>, -1>,
 
   Expect<Calculate<`(% 3 2)`>, 1>,
-  Expect<Calculate<`(% -3 2)`>, -1>,
+  Expect<Calculate<`(% -3 +2)`>, -1>,
   Expect<Calculate<`(% -3 -2)`>, -1>,
   Expect<Calculate<`(% 3 -2)`>, 1>,
-
-  // Expect<Calculate<`2`>, 2>,
 ]
