@@ -22,4 +22,4 @@ type Test = [
   Expect<Calculate<`(% -3 +2)`>, -1>,
   Expect<Calculate<`(% -3 -2)`>, -1>,
   Expect<Calculate<`(% 3 -2)`>, 1>,
-]
+];

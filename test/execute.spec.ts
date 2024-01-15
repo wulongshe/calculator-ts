@@ -23,5 +23,3 @@ type Test = [
   Expect<Execute<['+', '1', '2']>, [3, true]>,
   Expect<Execute<['-', '1', '2']>, [1, false]>,
 ];
-
-
