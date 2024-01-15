@@ -9,6 +9,6 @@
 ```ts
 import type { Calculate } from "./src";
 
-
-type Result = Calculate<`(- (+ 1 3) (* 4 2))`>; // -4
+type Result = Calculate<`(- (+ 10 30) (* 40 -2))`>; // 380
+type Result = Calculate<`(* (% 33 7) (% -35 6))`>; // -25
 ```

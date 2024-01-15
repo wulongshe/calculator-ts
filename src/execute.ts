@@ -19,8 +19,8 @@ export type Execute<T extends AST> =
   ? O extends '+' ? Add<Execute<A>, Execute<B>>
   : O extends '-' ? Sub<Execute<A>, Execute<B>>
   : O extends '*' ? Mul<Execute<A>, Execute<B>>
-  // : O extends '/' ? Div<Execute<A>, Execute<B>>
-  // : O extends '%' ? Mod<Execute<A>, Execute<B>>
+  : O extends '/' ? Div<Execute<A>, Execute<B>>
+  : O extends '%' ? Mod<Execute<A>, Execute<B>>
   : never
   : never
 
@@ -42,12 +42,18 @@ export type StringToINumber<T extends `${any}`, R extends SingleNumber[] = [], S
   : [...R, S]
 
 // 消除前导0
-export type TrimLeadingZero<T extends StringNumber> =
-  T extends `0${infer N extends StringNumber}`
-  ? TrimLeadingZero<N> : T
+export type TrimLeadingZero<T extends StringNumber> = T extends `0${infer N extends StringNumber}` ? TrimLeadingZero<N> : T
 
+/**
+ * @description 将数字数组转换为数字
+ * @example
+ * ```ts
+ * INumberToNumber<[3, 2, 1, false]> // -123
+ * ```
+ */
 export type INumberToNumber<T extends INumber, R extends `${any}` = ``> =
-  T extends [infer S extends boolean] ? `${S extends true ? '' : '-'}${TrimLeadingZero<R>}` extends `${infer N extends number}` ? N : never
+  T extends [infer S extends boolean]
+  ? `${S extends true ? '' : '-'}${TrimLeadingZero<R>}` extends `${infer N extends number}` ? N : never
   : T extends [infer N extends SingleNumber, ...infer L extends SingleNumber[], infer S extends boolean]
   ? INumberToNumber<[...L, S], `${N}${R}`>
   : never
@@ -97,26 +103,27 @@ export type SubMatrix = [
 export type OR<B1, B2> = [B1, B2] extends [0, 0] ? 0 : 1
 
 /**
- * @description 十以内自增矩阵
+ * @description 十以内自增偏移
  * @example
  * ```ts
- * Increase[0] // 0 + 1 = 1, 1 % 10 = 1, 1 / 10 = 0, 所以结果为 [1, 0]
- * Increase[9] // 9 + 1 = 10, 10 % 10 = 0, 10 / 10 = 1, 所以结果为 [0, 1]
+ * IncreaseOffset<[9, 0], 1> // 9 + 1 = 10, 10 % 10 = 0, 10 / 10 = 1, 所以结果为 [0, 1]
+ * IncreaseOffset<[1, 1], 1> // 1 + 1 = 2, 2 % 10 = 2, 2 / 10 = 0, 所以结果为 [2, 0]
+ * IncreaseOffset<[2, 1], 0> // 2 + 1 = 3, 3 % 10 = 3, 3 / 10 = 0, 所以结果为 [3, 0]
  * ```
  */
-export type Increase = [[1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0], [0, 1]]
-export type IncreaseOffset<T extends [SingleNumber, 0 | 1], F extends 0 | 1> = F extends 0 ? T : [Increase[T[0]][0], OR<T[1], Increase[T[0]][1]>]
+export type IncreaseOffset<T extends [SingleNumber, 0 | 1], F extends 0 | 1> =
+  AddMatrix[T[0]][F] extends [infer R1, infer F1] ? [R1, OR<T[1], F1>] : never
 
 /**
- * @description 十以内自减矩阵
+ * @description 十以内自减偏移
  * @example
  * ```ts
- * Decrease[0] // 0 < 1, 10 - 1 = 9, 所以结果为 [9, 1]
- * Decrease[9] // 9 - 1 = 8, 所以结果为 [8, 0]
+ * DecreaseOffset<[3, 1], 1> // 3 - 1 = 2, 所以结果为 [2, 1]
+ * DecreaseOffset<[0, 0], 1> // 0 < 1, 10 - 1 = 9, 所以结果为 [9, 1]
  * ```
  */
-export type Decrease = [[9, 1], [0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0]]
-export type DecreaseOffset<T extends [SingleNumber, 0 | 1], F extends 0 | 1> = F extends 0 ? T : [Decrease[T[0]][0], OR<T[1], Decrease[T[0]][1]>]
+export type DecreaseOffset<T extends [SingleNumber, 0 | 1], F extends 0 | 1> =
+  SubMatrix[T[0]][F] extends [infer R1, infer F1] ? [R1, OR<T[1], F1>] : never
 
 /**
  * @description 反异或 运算 数字符号
@@ -177,12 +184,29 @@ export type PositiveAdd<A extends SingleNumber[], B extends SingleNumber[], R ex
  * @description 正数减法
  * @template A 数字数组
  * @template B 数字数组
+ * @example
+ * ```ts
+ * PositiveSubHelper<[0, 0, 1], [0, 0, 1]> // [0, 0, 0, true]
+ * PositiveSubHelper<[0, 0, 1], [0, 0, 2]> // [0, 0, 1, false]
+ * PositiveSubHelper<[0, 0, 2], [0, 0, 1]> // [0, 0, 1, true]
+ * PositiveSubHelper<[0, 0, 1], [1]> // [9, 9, 0, true]
+ * ```
+ */
+export type PositiveSubHelper<A extends SingleNumber[], B extends SingleNumber[]> =
+  PositiveSub<A, B> extends [...infer R extends SingleNumber[], true]
+  ? [...R, true]
+  : AND_SIGN<PositiveSub<B, A>, false>
+
+/**
+ * @description 正数减法(补码)
+ * @template A 数字数组
+ * @template B 数字数组
  * @template R 结果
  * @template F 退位
  * @example
  * ```ts
  * PositiveSub<[0, 0, 1], [0, 0, 1]> // [0, 0, 0, true]
- * PositiveSub<[0, 0, 1], [0, 0, 2]> // [0, 0, 1, false]
+ * PositiveSub<[0, 0, 1], [0, 0, 2]> // [0, 0, 9, false]
  * PositiveSub<[0, 0, 2], [0, 0, 1]> // [0, 0, 1, true]
  * PositiveSub<[0, 0, 1], [1]> // [9, 9, 0, true]
  * ```
@@ -199,12 +223,6 @@ export type PositiveSub<A extends SingleNumber[], B extends SingleNumber[], R ex
   ? DecreaseOffset<SubMatrix[N1][N2], F> extends [infer N3 extends SingleNumber, infer F3 extends 0 | 1] ? PositiveSub<L1, L2, [...R, N3], F3> : never
   // A == [] & B == []
   : F extends 1 ? [...R, false] : [...R, true]
-
-export type PositiveSubHelper<A extends SingleNumber[], B extends SingleNumber[]> =
-  PositiveSub<A, B> extends [...infer R extends SingleNumber[], true]
-  ? [...R, true]
-  : AND_SIGN<PositiveSub<B, A>, false>
-
 
 export type Add<A extends INumber, B extends INumber> =
   [A, B] extends [[...infer AN extends SingleNumber[], infer AS extends boolean], [...infer BN extends SingleNumber[], infer BS extends boolean]]
@@ -223,9 +241,11 @@ export type MulHelper<A extends INumber, B extends INumber, R extends INumber = 
   : never
 export type Mul<A extends INumber, B extends INumber> = MulHelper<A, B>
 
-type m = Mul<[2, true], [3, false]>
-type m2 = Mul<[0, 1, true], [9, 5, true]>
-type s1 = Sub<[9, 0, true], [1, true]>
-type a = Add<[9, 6, true], [9, 5, true]>
-type s = PositiveSub<[0], [3]>
-type b = [9, 0, true] extends [...0[], boolean] ? true : false
+export type DivModHelper<A extends INumber, B extends INumber, R extends INumber = [0, true]> =
+  [A, B] extends [[...infer AN extends SingleNumber[], infer AS extends boolean], [...infer BN extends SingleNumber[], infer BS extends boolean]]
+  ? PositiveSub<AN, BN> extends [...SingleNumber[], true] ? DivModHelper<AND_SIGN<PositiveSub<AN, BN>, AS>, B, Add<R, [1, true]>>
+  : [XNOR_SIGN<R, XNOR<AS, BS>>, A]
+  : never
+
+export type Div<A extends INumber, B extends INumber> = DivModHelper<A, B> extends [infer R extends INumber, INumber] ? R : never
+export type Mod<A extends INumber, B extends INumber> = DivModHelper<A, B> extends [INumber, infer R extends INumber] ? R : never
